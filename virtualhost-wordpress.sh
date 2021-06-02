@@ -85,6 +85,18 @@ if [ "$action" == 'create' ]
 				AllowOverride all
 				Require all granted
 			</Directory>
+			# BEGIN WordPress
+			<IfModule mod_rewrite.c>
+				RewriteEngine On
+				RewriteRule ^index\.php$ - [L]
+				RewriteCond $1 ^(index\.php)?$ [OR]
+				RewriteCond $1 \.(gif|jpg|png|ico|css|js)$ [NC,OR]
+				RewriteCond %{REQUEST_FILENAME} -f [OR]
+				RewriteCond %{REQUEST_FILENAME} -d
+				RewriteRule ^(.*)$ - [S=1]
+				RewriteRule . /index.php [L]
+			</IfModule>
+			# END WordPress
 			ErrorLog /var/log/apache2/$domain-error.log
 			LogLevel error
 			CustomLog /var/log/apache2/$domain-access.log combined
