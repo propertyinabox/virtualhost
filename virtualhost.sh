@@ -8,10 +8,10 @@ domain=$2
 rootDir=$3
 owner=$(who am i | awk '{print $1}')
 apacheUser=$(ps -ef | egrep '(httpd|apache2|apache)' | grep -v root | head -n1 | awk '{print $1}')
-email='webmaster@localhost'
+email='nitin@propertyinabox.com.au'
 sitesEnabled='/etc/apache2/sites-enabled/'
 sitesAvailable='/etc/apache2/sites-available/'
-userDir='/var/www/'
+userDir='/var/www/vhosts/wp-sites/'
 sitesAvailabledomain=$sitesAvailable$domain.conf
 
 ### don't modify from here unless you know what you are doing ####
@@ -34,7 +34,8 @@ do
 done
 
 if [ "$rootDir" == "" ]; then
-	rootDir=${domain//./}
+	###rootDir=${domain//./}
+	rootDir=${domain}
 fi
 
 ### if root dir starts with '/', don't use /var/www as default starting point
@@ -76,13 +77,26 @@ if [ "$action" == 'create' ]
 			ServerAlias $domain
 			DocumentRoot $rootDir
 			<Directory />
-				AllowOverride All
+				Options FollowSymLinks
+				AllowOverride None
 			</Directory>
 			<Directory $rootDir>
 				Options Indexes FollowSymLinks MultiViews
 				AllowOverride all
 				Require all granted
 			</Directory>
+			# BEGIN WordPress
+			<IfModule mod_rewrite.c>
+				RewriteEngine On
+				RewriteRule ^index\.php$ - [L]
+				RewriteCond $1 ^(index\.php)?$ [OR]
+				RewriteCond $1 \.(gif|jpg|png|ico|css|js)$ [NC,OR]
+				RewriteCond %{REQUEST_FILENAME} -f [OR]
+				RewriteCond %{REQUEST_FILENAME} -d
+				RewriteRule ^(.*)$ - [S=1]
+				RewriteRule . /index.php [L]
+			</IfModule>
+			# END WordPress
 			ErrorLog /var/log/apache2/$domain-error.log
 			LogLevel error
 			CustomLog /var/log/apache2/$domain-access.log combined
