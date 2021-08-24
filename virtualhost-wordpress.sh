@@ -12,7 +12,9 @@ email='nitin@propertyinabox.com.au'
 sitesEnabled='/etc/apache2/sites-enabled/'
 sitesAvailable='/etc/apache2/sites-available/'
 userDir='/var/www/vhosts/wp-sites/'
+sslSuffix='-le-ssl'
 sitesAvailabledomain=$sitesAvailable$domain.conf
+sitesAvailabledomainSSL=$sitesAvailable$domain$sslSuffix.conf
 
 ### don't modify from here unless you know what you are doing ####
 
@@ -85,18 +87,6 @@ if [ "$action" == 'create' ]
 				AllowOverride all
 				Require all granted
 			</Directory>
-			# BEGIN WordPress
-			<IfModule mod_rewrite.c>
-				RewriteEngine On
-				RewriteRule ^index\.php$ - [L]
-				RewriteCond $1 ^(index\.php)?$ [OR]
-				RewriteCond $1 \.(gif|jpg|png|ico|css|js)$ [NC,OR]
-				RewriteCond %{REQUEST_FILENAME} -f [OR]
-				RewriteCond %{REQUEST_FILENAME} -d
-				RewriteRule ^(.*)$ - [S=1]
-				RewriteRule . /index.php [L]
-			</IfModule>
-			# END WordPress
 			ErrorLog /var/log/apache2/$domain-error.log
 			LogLevel error
 			CustomLog /var/log/apache2/$domain-access.log combined
@@ -109,13 +99,13 @@ if [ "$action" == 'create' ]
 		fi
 
 		### Add domain in /etc/hosts
-		if ! echo "127.0.0.1	$domain" >> /etc/hosts
-		then
-			echo $"ERROR: Not able to write in /etc/hosts"
-			exit;
-		else
-			echo -e $"Host added to /etc/hosts file \n"
-		fi
+#		if ! echo "127.0.0.1	$domain" >> /etc/hosts
+#		then
+#			echo $"ERROR: Not able to write in /etc/hosts"
+#			exit;
+#		else
+#			echo -e $"Host added to /etc/hosts file \n"
+#		fi
 
 		### Add domain in /mnt/c/Windows/System32/drivers/etc/hosts (Windows Subsytem for Linux)
 		if [ -e /mnt/c/Windows/System32/drivers/etc/hosts ]
@@ -167,26 +157,20 @@ if [ "$action" == 'create' ]
 
 			### disable website
 			a2dissite $domain
+			a2dissite $domain$sslSuffix
 
 			### restart Apache
 			/etc/init.d/apache2 reload
 
 			### Delete virtual host rules files
 			rm $sitesAvailabledomain
+			rm $sitesAvailabledomainSSL
 		fi
 
 		### check if directory exists or not
 		if [ -d $rootDir ]; then
-			echo -e $"Delete host root directory ? (y/n)"
-			read deldir
-
-			if [ "$deldir" == 'y' -o "$deldir" == 'Y' ]; then
-				### Delete the directory
-				rm -rf $rootDir
-				echo -e $"Directory deleted"
-			else
-				echo -e $"Host directory conserved"
-			fi
+			rm -rf $rootDir
+			echo -e $"Directory deleted"
 		else
 			echo -e $"Host directory not found. Ignored"
 		fi

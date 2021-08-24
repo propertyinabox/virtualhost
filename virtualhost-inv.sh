@@ -11,7 +11,7 @@ apacheUser=$(ps -ef | egrep '(httpd|apache2|apache)' | grep -v root | head -n1 |
 email='nitin@propertyinabox.com.au'
 sitesEnabled='/etc/apache2/sites-enabled/'
 sitesAvailable='/etc/apache2/sites-available/'
-userDir='/var/www/vhosts/'
+userDir='/var/www/vhosts/investmentproperties/public/'
 sitesAvailabledomain=$sitesAvailable$domain.conf
 
 ### don't modify from here unless you know what you are doing ####
@@ -74,7 +74,7 @@ if [ "$action" == 'create' ]
 		<VirtualHost *:80>
 			ServerAdmin $email
 			ServerName $domain
-			ServerAlias $domain
+			ServerAlias www.$domain
 			DocumentRoot $rootDir
 			<Directory />
 				Options FollowSymLinks
@@ -97,13 +97,13 @@ if [ "$action" == 'create' ]
 		fi
 
 		### Add domain in /etc/hosts
-		if ! echo "127.0.0.1	$domain" >> /etc/hosts
-		then
-			echo $"ERROR: Not able to write in /etc/hosts"
-			exit;
-		else
-			echo -e $"Host added to /etc/hosts file \n"
-		fi
+#		if ! echo "127.0.0.1	$domain" >> /etc/hosts
+#		then
+#			echo $"ERROR: Not able to write in /etc/hosts"
+#			exit;
+#		else
+#			echo -e $"Host added to /etc/hosts file \n"
+#		fi
 
 		### Add domain in /mnt/c/Windows/System32/drivers/etc/hosts (Windows Subsytem for Linux)
 		if [ -e /mnt/c/Windows/System32/drivers/etc/hosts ]
